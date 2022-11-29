@@ -48,6 +48,7 @@ function create_stacks(data) {
 
 function search(stacks) {
 
+	let from_idx = 0;
 	for(const stack of stacks) {
 
 		let from = get_valid_from(stack);
@@ -55,15 +56,21 @@ function search(stacks) {
 
 			// console.log(i, from);
 
+			let dest_idx = 0;
 			for(const dst_stack of stacks) {
 				if(dst_stack !== stack) {
 					let is_valid = check_valid_to(from, dst_stack);
 					if(is_valid === true) {
-						console.log(from, "=>", dst_stack[dst_stack.length - 1]);
+						const from_str = format_card(from);
+						const dest_str = format_card(dst_stack[dst_stack.length - 1]);
+						const line = `${from_str}(${from_idx}) => ${dest_str}(${dest_idx})`;  
+						console.log(line);
 					}
 				}
+				dest_idx++;
 			}
 		}
+		from_idx++;
 	}
 }
 
@@ -129,14 +136,46 @@ function move_cancel() {
 
 }
 
-function print(stacks) {
 
-	console.log("\u1F0A1");
+function print_stacks(stacks) {
+
+	// get max stack size
+	let row_count = 0;
+	for(const stack of stacks) {
+		if(stack.length > row_count) {
+			row_count = stack.length;
+		}
+	}
+
+	for(let i=0; i<row_count; i++) {
+		let line = "";
+		for(const stack of stacks) {
+			if(stack.length > i) {
+				line += format_card(stack[i]) + " ";
+			}
+			else {
+				line += "   ";
+			}
+		}
+		console.log(line);
+	}
 }
 
+function format_card(card) {
 
+	const suit_map = { 
+		s: "\u2660",
+		c: "\u2663",
+		h: "\u2665",
+		d: "\u2666"
+	}
+
+	let rank = card.rank < 10 ? " " + card.rank : card.rank;
+	let suit = suit_map[card.suit];
+	return rank + suit;
+}
 
 stacks = create_stacks(data);
 search(stacks);
-print(stacks);
+print_stacks(stacks);
 console.log("end");
