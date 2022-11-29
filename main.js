@@ -48,7 +48,7 @@ function create_stacks(data) {
 
 function search(stacks) {
 
-	let from_idx = 0;
+	let from_idx = 1;
 	for(const stack of stacks) {
 
 		let from = get_valid_from(stack);
@@ -56,7 +56,7 @@ function search(stacks) {
 
 			// console.log(i, from);
 
-			let dest_idx = 0;
+			let dest_idx = 1;
 			for(const dst_stack of stacks) {
 				if(dst_stack !== stack) {
 					let is_valid = check_valid_to(from, dst_stack);
@@ -176,6 +176,5 @@ function format_card(card) {
 }
 
 stacks = create_stacks(data);
-search(stacks);
 print_stacks(stacks);
-console.log("end");
+search(stacks);
