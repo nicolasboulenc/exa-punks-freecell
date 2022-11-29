@@ -6,7 +6,7 @@
     "configurations": [
         {
             "type": "node",
-            "runtimeExecutable": "/home/nicolas/.nvm/versions/node/v18.12.1/bin/node",
+            // "runtimeExecutable": "/home/nicolas/.nvm/versions/node/v18.12.1/bin/node",
             "request": "launch",
             "name": "Launch Program",
             "skipFiles": [
