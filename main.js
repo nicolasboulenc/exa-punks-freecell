@@ -67,11 +67,16 @@ function print_game(game) {
 				line += format_card(stack[i]) + " ";
 			}
 			else {
-				line += "   ";
+				line += "    ";
 			}
 		}
 		console.log(line);
 	}
+}
+
+
+function serialise_game() {
+
 }
 
 
@@ -120,6 +125,11 @@ function get_valid_moves(game) {
 		from_idx++;
 	}
 
+	if(game.freecell !== null) {
+		valid_froms.push({ src: game.freecell, stack_idx: 9 });
+	}
+
+
 	// look for valid destinations
 	const valid_moves = [];
 	for(const from of valid_froms) {
@@ -139,7 +149,7 @@ function get_valid_moves(game) {
 		}
 
 		if(Array.isArray(from.src) === false && game.freecell === null) {
-			valid_moves.push({ src: from.src, src_idx: from.stack_idx, dst: null, dst_idx: 0 });
+			valid_moves.push({ src: from.src, src_idx: from.stack_idx, dst: null, dst_idx: 9 });
 		}
 	}
 
@@ -199,11 +209,61 @@ function check_valid_to(card, stack) {
 }
 
 
+function check_success(game) {
+
+	// each stack is 4 identical suits or alternating 10 to 6 black/red or red black
+	let success = true;
+	let idx = 0;
+	while(idx < game.stacks.length && success === true) {
+		let stack = game.stacks[idx];
+		if(stack.length !== 4) {
+			success = false;
+			break;
+		}
+		success = ( (stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7) &&
+				    (stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color ) ) ||
+				  ( (stack[0].rank === stack[1].rank === stack[2].rank === stack[3].rank === FACE) &&
+				    (stack[0].suit === stack[1].suit === stack[2].suit === stack[3].suit ) );
+		idx++;
+	}
+
+	return success;
+}
+
+
 function execute(move, game) {
 
 	// link cards to dst
-	
+	if(move.dst_idx === 9) {
+		game.freecell = move.src;
+	}
+	else {
+		let dst_stack = game.stacks[move.dst_idx];
+		if(Array.isArray(move.src) === false) {
+			dst_stack.push(move.src);
+		}
+		else {
+			for(const card of move.src) {
+				dst_stack.push(card);
+			}
+		}
+	}
+
 	// dettach from src
+	if(move.src_idx === 9) {
+		game.freecell = null;
+	}
+	else {
+		let src_stack = game.stacks[move.src_idx];
+		if(Array.isArray(move.src) === false) {
+			src_stack.pop();
+		}
+		else {
+			for(const card of move.src) {
+				src_stack.pop();
+			}
+		}
+	}
 }
 
 
@@ -217,12 +277,18 @@ function cancel(move, game) {
 
 function solve(game) {
 
+	// test for victory
+	let success = check_success(game);
+	if(success === true) {
+		// stop
+	}
+
 	let valid_moves = get_valid_moves(game);
+	// need to check moves to make sure we dont end up in a loop, moving freecell card back and forth for example!!!
+
 	for(const move of valid_moves) {
-		const src_str = format_card(move.src);
-		let dst_str = format_card(move.dst);
-		const line = `${src_str}(${move.src_idx}) => ${dst_str}(${move.dst_idx})`;
-		console.log(line);
+		execute(move, game);
+		solve(game);
 	}
 }
 
@@ -235,3 +301,4 @@ const game = {
 game.stacks = create_stacks(DATA);
 print_game(game);
 solve(game);
+print_game(game);
