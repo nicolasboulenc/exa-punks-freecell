@@ -19,6 +19,18 @@ const DATA = [
 	[ "6s", "ad", "6c", "7s" ]
 ]
 
+const DATA_SUCCESS = [
+	[ "as", "js", "ks", "qs" ],
+	[ "ac", "qc", "kc", "jc" ],
+	[ "kh", "jh", "ah", "qh" ],
+	[ "qd", "jd", "kd", "ad" ],
+	[ "10d", "9s", "8h", "7c" ],
+	[ "10h", "9c", "8d", "7s" ],
+	[ "10s", "9h", "8c", "7h" ],
+	[ "10c", "9d", "8s", "7d" ]
+]
+
+
 
 function create_stacks(data) {
 
@@ -75,8 +87,23 @@ function print_game(game) {
 }
 
 
-function serialise_game() {
+function serialise_game(game) {
+	// this function is for state test, so we're only interrested in b/r and f cards
+	let state = "";
+	if(game.freecell === null) {
+		state += "__";
+	}
+	else {
+		state += game.freecell.rank + game.freecell.color;
+	}
 
+	for(const stack of game.stacks) {
+		for(const card of stack) {
+			state += card.rank + card.color;
+		}
+	}
+
+	return state;
 }
 
 
@@ -211,6 +238,10 @@ function check_valid_to(card, stack) {
 
 function check_success(game) {
 
+	if(game.freecell !== null) {
+		return false;
+	}
+
 	// each stack is 4 identical suits or alternating 10 to 6 black/red or red black
 	let success = true;
 	let idx = 0;
@@ -220,10 +251,10 @@ function check_success(game) {
 			success = false;
 			break;
 		}
-		success = ( (stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7) &&
-				    (stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color ) ) ||
-				  ( (stack[0].rank === stack[1].rank === stack[2].rank === stack[3].rank === FACE) &&
-				    (stack[0].suit === stack[1].suit === stack[2].suit === stack[3].suit ) );
+		success = (	(stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7) &&
+					(stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color ) ) ||
+				  (	(stack[0].rank === stack[1].rank === stack[2].rank === stack[3].rank === FACE) &&
+					(stack[0].suit === stack[1].suit === stack[2].suit === stack[3].suit ) );
 		idx++;
 	}
 
@@ -293,12 +324,15 @@ function solve(game) {
 }
 
 
+
+
 const game = {
 	stacks: [],
 	freecell: null
 }
 
-game.stacks = create_stacks(DATA);
+game.stacks = create_stacks(DATA_SUCCESS);
+console.log(check_success(game));
 print_game(game);
-solve(game);
-print_game(game);
+// solve(game);
+// print_game(game);
