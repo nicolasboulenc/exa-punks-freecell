@@ -98,7 +98,21 @@ function format_card(card) {
     if (card === null)
         return " __";
     const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" };
-    let rank = card.rank < 10 || card.rank === FACE ? " " + card.rank : card.rank;
+    let rank;
+    if (card.rank < 11) {
+        rank = card.rank.toString();
+    }
+    else {
+        if (card.rank === 11)
+            rank = 'J';
+        else if (card.rank === 12)
+            rank = 'Q';
+        else if (card.rank === 13)
+            rank = 'K';
+        else if (card.rank === 14)
+            rank = 'A';
+    }
+    rank = rank.padStart(2, ' ');
     let suit = suit_map[card.suit];
     return rank + suit;
 }
@@ -173,13 +187,13 @@ function get_valid_from(stack) {
     // if 4 faces, this cannot be moved
     if (stack.length === 4 &&
         stack[0].suit === stack[1].suit && stack[1].suit === stack[2].suit && stack[2].suit === stack[3].suit &&
-        stack[0].rank === stack[1].rank && stack[1].rank === stack[2].rank && stack[2].rank === stack[3].rank && stack[3].rank === FACE) {
+        stack[0].face === stack[1].face === stack[2].face === stack[3].face === true) {
         return [];
     }
     if (stack.length > 1) {
         let i = stack.length - 2;
         while ((i > -1) && ((stack[i].color !== stack[i + 1].color && stack[i].rank === stack[i + 1].rank + 1) ||
-            (stack[i].suit === stack[i + 1].suit && stack[i].rank === stack[i + 1].rank && stack[i + 1].rank === FACE))) {
+            (stack[i].suit === stack[i + 1].suit && stack[i].face === stack[i + 1].face === true))) {
             i--;
         }
         i++;
@@ -194,8 +208,8 @@ function check_valid_to(card, stack) {
     if (stack.length === 0)
         return true;
     let stack_card = stack[stack.length - 1];
-    let is_valid = (card.rank === stack_card.rank - 1 && card.color !== stack_card.color) ||
-        (card.rank === stack_card.rank && stack_card.rank === FACE && card.suit === stack_card.suit);
+    let is_valid = (card.rank === stack_card.rank - 1 && card.face === stack_card.face === false && card.color !== stack_card.color) ||
+        (card.face === stack_card.face === true && card.suit === stack_card.suit);
     return is_valid;
 }
 function check_success(game) {
@@ -213,7 +227,7 @@ function check_success(game) {
         }
         success = ((stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7) &&
             (stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color)) ||
-            ((stack[0].rank === stack[1].rank && stack[1].rank === stack[2].rank && stack[2].rank === stack[3].rank && stack[3].rank === FACE) &&
+            ((stack[0].face === stack[1].face === stack[2].face === stack[3].face === true) &&
                 (stack[0].suit === stack[1].suit && stack[1].suit === stack[2].suit && stack[2].suit === stack[3].suit));
         idx++;
     }
