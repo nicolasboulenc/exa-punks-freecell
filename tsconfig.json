@@ -3,6 +3,9 @@
         "target": "ESNext",
         "watch": true,
         "lib": ["dom", "es2017"],
-        "sourceMap": true
+        "sourceMap": true,
+        "noImplicitReturns": true,
+        "strict": true,
+        "noUnusedLocals": true
     }
 }

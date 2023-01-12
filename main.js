@@ -16,25 +16,26 @@ const FACE = 0;
 // 	[ "6s", "ad", "6c", "7s" ]
 // ];
 const DATA = [
-    ["7c", "7s", "ks", "js"],
-    ["ah", "jd", "10h", "6h"],
-    ["9h", "qh", "10c", "kd"],
-    ["10d", "10s", "jc", "8s"],
-    ["kc", "qd", "6d", "qs"],
-    ["ac", "8c", "9c", "jh"],
-    ["9d", "7h", "7d", "8h"],
-    ["kh", "9s", "qc", "8d"],
-    ["6s", "ad", "6c", "as"]
+    ["8d", "8c", "ac", "8s"],
+    ["kd", "ks", "10s", "qs"],
+    ["7h", "6h", "10h", "jc"],
+    ["8h", "kc", "10d", "9c"],
+    ["kh", "9h", "jh", "9s"],
+    ["10c", "qh", "6s", "js"],
+    ["7c", "jd", "7s", "6d"],
+    ["qd", "6c", "7d", "ah"],
+    ["9d", "qc", "ad", "as"]
 ];
 const DATA_SUCCESS = [
-    ["as", "js", "ks", "qs"],
-    ["ac", "qc", "kc", "jc"],
-    ["kh", "jh", "ah", "qh"],
-    ["qd", "jd", "kd", "ad"],
-    ["10d", "9s", "8h", "7c"],
-    ["10h", "9c", "8d", "7s"],
-    ["10s", "9h", "8c", "7h"],
-    ["10c", "9d", "8s", "7d"]
+    ['10h', '9c', '8h', '7s', '6h'],
+    ['10c', '9d', '8s', '7d', '6c'],
+    ['10s', '9h', '8c', '7h', '6s'],
+    ['10d', '9s', '8d', '7c', '6d'],
+    [],
+    ['as', 'qs', 'ks', 'js'],
+    ['qc', 'ac', 'jc', 'kc'],
+    ['ad', 'qd', 'kd', 'jd'],
+    ['kh', 'qh', 'jh', 'ah'],
 ];
 function create_stacks(data) {
     let stacks = [];
@@ -56,12 +57,20 @@ function create_stacks(data) {
                     rank = 13;
                 else if (r === 'a')
                     rank = 14;
+                else
+                    rank = 999;
             }
-            let suit = c.substring(c.length - 1);
-            let color = (suit === "h" || suit === "d" ? "r" : "b");
-            if (isNaN(rank) === true) {
-                rank = FACE;
-            }
+            let s = c.substring(c.length - 1);
+            let suit = 's';
+            if (s === 's')
+                suit = 's';
+            else if (s === 'c')
+                suit = 'c';
+            else if (s === 'h')
+                suit = 'h';
+            else if (s === 'd')
+                suit = 'd';
+            let color = (suit === 'h' || suit === 'd' ? 'r' : 'b');
             let card = { rank: rank, suit: suit, color: color, face: rank > 10 };
             stack.push(card);
         }
@@ -112,6 +121,8 @@ function format_card(card) {
             rank = 'K';
         else if (card.rank === 14)
             rank = 'A';
+        else
+            rank = '?';
     }
     let suit = suit_map[card.suit];
     return rank + suit;
@@ -143,43 +154,49 @@ function get_valid_moves(game) {
     let from_idx = 0;
     for (const stack of game.stacks) {
         let from = get_valid_from(stack);
+        const is_full_stack = (from.length === stack.length);
         // add the stacks - 1 possibility, to use the one left with the free cell
         if (from.length > 0) {
-            valid_froms.push({ src: from, src_idx: from_idx });
+            valid_froms.push({ src: from, src_idx: from_idx, is_full_stack: is_full_stack });
         }
         from_idx++;
     }
     if (game.freecell !== null) {
-        valid_froms.push({ src: game.freecell, src_idx: 9 });
+        valid_froms.push({ src: [game.freecell], src_idx: 9, is_full_stack: false });
     }
     // look for valid destinations
     const valid_moves = [];
-    for (const from of valid_froms) {
+    for (const pseudo_move of valid_froms) {
         let dst_idx = 0;
         while (dst_idx < game.stacks.length) {
-            if (dst_idx !== from.src_idx) {
-                let card = from.src[0];
+            if (dst_idx !== pseudo_move.src_idx) {
+                // prevent moving a full stack to an empty stack
+                if (pseudo_move.is_full_stack && game.stacks[dst_idx].length === 0) {
+                    dst_idx++;
+                    continue;
+                }
+                let card = pseudo_move.src[0];
                 let is_valid = check_valid_to(card, game.stacks[dst_idx]);
                 if (is_valid === true) {
+                    let dst = null;
                     if (game.stacks[dst_idx].length > 0) {
-                        valid_moves.push({ src: from.src, src_idx: from.src_idx, dst: game.stacks[dst_idx][game.stacks[dst_idx].length - 1], dst_idx: dst_idx });
+                        dst = game.stacks[dst_idx][game.stacks[dst_idx].length - 1];
                     }
-                    else {
-                        valid_moves.push({ src: from.src, src_idx: from.src_idx, dst: null, dst_idx: dst_idx });
-                    }
+                    valid_moves.push({ src: pseudo_move.src, src_idx: pseudo_move.src_idx, dst: dst, dst_idx: dst_idx });
                 }
             }
             dst_idx++;
         }
-        if (Array.isArray(from.src) === false && game.freecell === null) {
-            valid_moves.push({ src: from.src, src_idx: from.src_idx, dst: null, dst_idx: 9 });
+        if (pseudo_move.src.length === 1 && game.freecell === null) {
+            valid_moves.push({ src: pseudo_move.src, src_idx: pseudo_move.src_idx, dst: null, dst_idx: 9 });
         }
     }
     return valid_moves;
 }
 function get_valid_from(stack) {
-    if (stack.length === 0)
+    if (stack.length === 0) {
         return [];
+    }
     if (stack.length === 1) {
         return [stack[0]];
     }
@@ -191,8 +208,8 @@ function get_valid_from(stack) {
     }
     if (stack.length > 1) {
         let i = stack.length - 2;
-        while ((i > -1) && ((stack[i].color !== stack[i + 1].color && stack[i].rank === stack[i + 1].rank + 1) ||
-            (stack[i].suit === stack[i + 1].suit && stack[i].face === true && stack[i + 1].face === true))) {
+        while ((i > -1) && ((stack[i].face === false && stack[i + 1].face === false && stack[i].color !== stack[i + 1].color && stack[i].rank === stack[i + 1].rank + 1) ||
+            (stack[i].face === true && stack[i + 1].face === true && stack[i].suit === stack[i + 1].suit))) {
             i--;
         }
         i++;
@@ -202,6 +219,7 @@ function get_valid_from(stack) {
         }
         return group;
     }
+    return [];
 }
 function check_valid_to(card, stack) {
     if (stack.length === 0)
@@ -219,14 +237,14 @@ function check_success(game) {
     let success = true;
     let idx = 0;
     while (idx < game.stacks.length && success === true) {
-        let stack = game.stacks[idx];
-        if (stack.length !== 4) {
-            success = false;
-            break;
-        }
-        success = ((stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7) &&
-            (stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color)) ||
-            ((stack[0].face === true && stack[1].face === true && stack[2].face === true && stack[3].face === true) &&
+        const stack = game.stacks[idx];
+        // 10 down
+        success = (stack.length === 0) ||
+            (stack.length === 5 &&
+                (stack[0].rank === 10 && stack[1].rank === 9 && stack[2].rank === 8 && stack[3].rank === 7 && stack[4].rank === 6) &&
+                (stack[0].color !== stack[1].color && stack[1].color !== stack[2].color && stack[2].color !== stack[3].color && stack[3].color !== stack[4].color)) ||
+            (stack.length === 4 &&
+                (stack[0].face === true && stack[1].face === true && stack[2].face === true && stack[3].face === true) &&
                 (stack[0].suit === stack[1].suit && stack[1].suit === stack[2].suit && stack[2].suit === stack[3].suit));
         idx++;
     }
@@ -234,34 +252,31 @@ function check_success(game) {
 }
 function execute(move, game) {
     // link cards to dst
-    if (move.dst_idx === 9) {
-        game.freecell = move.src[0];
-    }
-    else {
+    if (move.dst_idx < 9) {
         let dst_stack = game.stacks[move.dst_idx];
         for (const card of move.src) {
             dst_stack.push(card);
         }
     }
-    // dettach from src
-    if (move.src_idx === 9) {
-        game.freecell = null;
+    else if (move.dst_idx === 9) {
+        game.freecell = move.src[0];
     }
-    else {
+    // dettach from src
+    if (move.src_idx < 9) {
         let src_stack = game.stacks[move.src_idx];
-        if (Array.isArray(move.src) === false) {
+        for (const _ of move.src) {
             src_stack.pop();
         }
-        else {
-            for (const card of move.src) {
-                src_stack.pop();
-            }
-        }
+    }
+    else if (move.src_idx === 9) {
+        game.freecell = null;
     }
 }
 function cancel(move, game) {
     // reverse move
-    const dst = game.stacks[move.src_idx][game.stacks[move.src_idx].length];
+    // const t = game.stacks[move.src_idx];
+    // const dst = game.stacks[move.src_idx][game.stacks[move.src_idx].length];
+    const dst = null;
     const rev = { src: move.src, src_idx: move.dst_idx, dst: dst, dst_idx: move.src_idx };
     execute(rev, game);
 }
@@ -270,33 +285,50 @@ function solve(game) {
     let success = check_success(game);
     if (success === true) {
         // stop
-        console.log('solved!');
+        if (game.moves.length < move_count) {
+            move_count = game.moves.length;
+            console.log(`${solutions}. Solved in ${game.moves.length} moves !`);
+            for (let move of game.moves) {
+                print_move(move);
+            }
+            console.log();
+        }
+        solutions++;
+        // return true;
+        return false;
     }
     // get next moves
     let valid_moves = get_valid_moves(game);
-    // need to check moves to make sure we dont end up in a loop, moving freecell card back and forth for example!!!
     // if no more moves
     if (valid_moves.length === 0) {
-        console.log('no further valid move');
-        return;
+        // console.log('no further valid move');
+        return false;
     }
     // execute moves
     for (const move of valid_moves) {
-        let new_game = Object.assign({}, game);
-        execute(move, new_game);
+        execute(move, game);
         // if recuring states cancel
-        let state = serialise_game(new_game);
-        if (new_game.states.includes(state) === true) {
-            cancel(move, new_game);
-            return;
+        let state = serialise_game(game);
+        if (game.states.includes(state) === true) {
+            cancel(move, game);
+            continue;
         }
-        new_game.states.push(state);
-        print_game(new_game);
+        game.states.push(state);
+        // print_game(game);
+        game.moves.push(move);
         // else call solve
-        solve(new_game);
+        const res = solve(game);
+        if (res === true) {
+            return true;
+        }
+        else {
+            cancel(move, game);
+            game.moves.pop();
+        }
     }
+    return false;
 }
-const game = { stacks: [], freecell: null, states: [] };
+const game = { stacks: [], freecell: null, states: [], moves: [] };
 // 1. test check_success
 // game.stacks = create_stacks(DATA_SUCCESS);
 // console.log(check_success(game));
@@ -343,7 +375,9 @@ const game = { stacks: [], freecell: null, states: [] };
 // }
 // console.log(serialise_game(game));
 // 3
+let solutions = 1;
+let move_count = 999;
 game.stacks = create_stacks(DATA);
 print_game(game);
-solve(game);
+const res = solve(game);
 //# sourceMappingURL=main.js.map
