@@ -1,8 +1,5 @@
 "use strict";
 
-// suits can be a = spade, b = earts, c = clubs, d = diamonds
-// ranks can be 6 to 10 = s to w, r(ed), b(lack)
-
 // suits can be s(pade), c(lubs), d(iamonds), h(earts)
 // ranks can be 6 to 10, a(ce), k(ing), q(ueen), j(ack)
 
@@ -421,75 +418,13 @@ function solve(game: Game): boolean {
 	return false;
 }
 
-const game: Game = { stacks: [], freecell: null, states: [], moves: [] };
-
-// 1. test check_success
-// game.stacks = create_stacks(DATA_SUCCESS);
-// console.log(check_success(game));
-// print_game(game);
-
-// 2. test execute / cancel
-// game.stacks = create_stacks(DATA);
-// console.log(check_success(game));
-// print_game(game);
-
-// let moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-// execute(moves[0], game);
-// print_game(game);
-
-// cancel(moves[0], game);
-// print_game(game);
-
-// moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-// execute(moves[0], game);
-// print_game(game);
-
-// moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-// execute(moves[0], game);
-// print_game(game);
-
-// moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-// execute(moves[6], game);
-// print_game(game);
-
-// moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-// execute(moves[11], game);
-// print_game(game);
-
-// moves = get_valid_moves(game);
-// for(let move of moves) {
-// 	print_move(move);
-// }
-
-
-// console.log(serialise_game(game));
-
-// 3
 let solutions = 1;
 let move_count = 999;
-game.stacks = create_stacks(DATA);
-print_game(game);
 
+const game: Game = { stacks: [], freecell: null, states: [], moves: [] };
+game.stacks = create_stacks(DATA);
+
+print_game(game);
 const res = solve(game);
 
 // if(res === true) {
