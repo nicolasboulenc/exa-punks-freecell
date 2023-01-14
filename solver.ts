@@ -3,44 +3,6 @@
 // suits can be s(pade), c(lubs), d(iamonds), h(earts)
 // ranks can be 6 to 10, a(ce), k(ing), q(ueen), j(ack)
 
-const FACE = 0;
-
-// const DATA = [
-// 	[ "as", "10h", "ks", "qc" ],
-// 	[ "ah", "jd", "8s", "6h" ],
-// 	[ "9h", "qh", "10c", "kd" ],
-// 	[ "10d", "10s", "jc", "7c" ],
-// 	[ "kc", "qd", "6d", "qs" ],
-// 	[ "ac", "8c", "9c", "jh" ],
-// 	[ "9d", "7h", "7d", "8h" ],
-// 	[ "kh", "9s", "js", "8d" ],
-// 	[ "6s", "ad", "6c", "7s" ]
-// ];
-
-const DATA = [
-	[ "8d", "8c", "ac", "8s" ],
-	[ "kd", "ks", "10s", "qs" ],
-	[ "7h", "6h", "10h", "jc" ],
-	[ "8h", "kc", "10d", "9c" ],
-	[ "kh", "9h", "jh", "9s" ],
-	[ "10c", "qh", "6s", "js" ],
-	[ "7c", "jd", "7s", "6d" ],
-	[ "qd", "6c", "7d", "ah" ],
-	[ "9d", "qc", "ad", "as" ]
-];
-
-const DATA_SUCCESS = [
-	[ '10h', '9c', '8h', '7s', '6h' ],
-	[ '10c', '9d', '8s', '7d', '6c' ],
-	[ '10s', '9h', '8c', '7h', '6s' ],
-	[ '10d', '9s', '8d', '7c', '6d' ],
-	[],
-	[ 'as', 'qs', 'ks', 'js' ],
-	[ 'qc', 'ac', 'jc', 'kc' ],
-	[ 'ad', 'qd', 'kd', 'jd' ],
-	[ 'kh', 'qh', 'jh', 'ah' ],
-];
-
 type Color = 'r' | 'b';
 type Suit = 's' | 'c' | 'h' | 'd';
 
@@ -63,6 +25,13 @@ interface Move {
 	src_idx: number,
 	dst: Card | null,
 	dst_idx: number
+}
+
+
+function create_game(data: string[][]): Game {
+
+	let stacks = create_stacks(data);
+	return { stacks: stacks, freecell: null, states: [], moves: [] };
 }
 
 
@@ -349,9 +318,6 @@ function execute(move: Move, game: Game): void {
 
 function cancel(move: Move, game: Game) {
 
-	// reverse move
-	// const t = game.stacks[move.src_idx];
-	// const dst = game.stacks[move.src_idx][game.stacks[move.src_idx].length];
 	const dst = null
 	const rev: Move = { src: move.src, src_idx: move.dst_idx, dst: dst, dst_idx: move.src_idx };
 	execute(rev, game);
@@ -360,21 +326,10 @@ function cancel(move: Move, game: Game) {
 
 function solve(game: Game): boolean {
 
-	// test for victory
+	// test for success
 	let success = check_success(game);
 	if(success === true) {
-		// stop
-		if(game.moves.length < move_count) {
-			move_count = game.moves.length;
-			console.log(`${solutions}. Solved in ${game.moves.length} moves !`);
-			for(let move of game.moves) {
-				print_move(move);
-			}
-			console.log();
-		}
-		solutions++;
-		// return true;
-		return false;
+		return true;
 	}
 
 	// get next moves
@@ -418,19 +373,110 @@ function solve(game: Game): boolean {
 	return false;
 }
 
-let solutions = 1;
-let move_count = 999;
 
-const game: Game = { stacks: [], freecell: null, states: [], moves: [] };
-game.stacks = create_stacks(DATA);
+function solve_all(game: Game, callback: Function, start_index: number=0): boolean {
 
-print_game(game);
-const res = solve(game);
+	// forward(game, start_index);
 
-// if(res === true) {
-// 	console.log(`Solved in ${game.moves.length} moves!`)
-// }
+	// test for success
+	let success = check_success(game);
+	if(success === true) {
+		callback(game);
+		return false;
+	}
 
-// for(let move of game.moves) {
-// 	print_move(move);
-// }
+	// get next moves
+	let valid_moves = get_valid_moves(game);
+
+	// if no more moves
+	if(valid_moves.length === 0) {
+		// console.log('no further valid move');
+		return false;
+	}
+
+	// execute moves
+	for(const move of valid_moves) {
+
+		execute(move, game);
+
+		// if recuring states cancel
+		let state = serialise_game(game);
+		if(game.states.includes(state) === true) {
+			cancel(move, game);
+			continue;
+		}
+
+		game.states.push(state);
+		// print_game(game);
+
+		game.moves.push(move);
+
+		// else call solve
+		const res = solve_all(game, callback);
+
+		if(res === true) {
+			return true;
+		}
+		else {
+			cancel(move, game);
+			game.moves.pop();
+		}
+	}
+
+	return false;
+}
+
+
+function forward(game: Game, move_count: number, move_index: number = 0): boolean {
+	// this only moves forward on the first level of valid_moves
+	// ideally this should go down the tree of valid moves breadth first
+	// the solve algorithm is depth first
+
+	// test for success
+	if(move_index === move_count) {
+		return true;
+	}
+
+	// get next moves
+	let valid_moves = get_valid_moves(game);
+
+	// if no more moves
+	if(valid_moves.length === 0) {
+		// console.log('no further valid move');
+		return false;
+	}
+
+	if(move_index + valid_moves.length < move_count) {
+		// move_index += valid_moves.length;
+		// return forward(game, move_count, move_index);
+		return false;
+	}
+
+	// execute moves
+	let i = 0;
+	while(move_index + i < move_count) {
+		i++;
+	}		
+
+	const move = valid_moves[i];
+
+	execute(move, game);
+
+	// if recuring states cancel
+	let state = serialise_game(game);
+	if(game.states.includes(state) === true) {
+		cancel(move, game);
+		return false;
+	}
+
+	game.states.push(state);
+	// print_game(game);
+
+	game.moves.push(move);
+
+	return true;
+}
+
+
+export { create_game, solve, solve_all, print_game, print_move };
+

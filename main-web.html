@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body>
+<div>
+    
+</div>
+</body>
+<script type="module">
+import { create_game, create_stacks, solve, print_game, print_move } from './solver.js'
+
+const DATA = [
+	[ "as", "10h", "ks", "qc" ],
+	[ "ah", "jd", "7c", "6h" ],
+	[ "9h", "qh", "10c", "kd" ],
+	[ "10d", "10s", "jc", "8s" ],
+	[ "kc", "qd", "6d", "qs" ],
+	[ "ac", "8c", "9c", "jh" ],
+	[ "9d", "7h", "7d", "8h" ],
+	[ "kh", "9s", "js", "8d" ],
+	[ "6s", "ad", "6c", "7s" ]
+];
+
+let stacks = create_stacks(DATA);
+const game = create_game(stacks);
+print_game(game);
+let res = solve(game);
+
+if(res === true) {
+    for(const move of game.moves) {
+        print_move(move);
+    }
+}
+
+print_game(game);
+
+</script>
+</html>

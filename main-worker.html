@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body>
+<div>
+    
+</div>
+</body>
+<script>
+
+const DATA = [
+	[ "as", "10h", "ks", "qc" ],
+	[ "ah", "jd", "7c", "6h" ],
+	[ "9h", "qh", "10c", "kd" ],
+	[ "10d", "10s", "jc", "8s" ],
+	[ "kc", "qd", "6d", "qs" ],
+	[ "ac", "8c", "9c", "jh" ],
+	[ "9d", "7h", "7d", "8h" ],
+	[ "kh", "9s", "js", "8d" ],
+	[ "6s", "ad", "6c", "7s" ]
+];
+
+const worker_count = 3;
+for(let i=0; i < worker_count; i++) {
+	
+	const worker = new Worker('main-worker.js', { type: "module" });
+	worker.postMessage({ action: 'init', board: DATA, start_index: i });
+	worker.onmessage = (e) => { console.log('e'); }
+}
+
+
+function print_move(move) {
+
+	let from = [];
+	for(let card of move.src) {
+		from.push(format_card(card));
+	}
+
+	let src = from.join(', ')
+	if(move.src.length > 1) {
+		src = `[${src}]`;
+	}
+
+	let line = `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
+	console.log(line);
+}
+
+
+function format_card(card) {
+
+// in case it is the freecell destination
+if(card === null) return " __";
+
+const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" }
+let rank;
+if(card.rank < 11) {
+	rank = card.rank.toString();
+}
+else {
+	if(card.rank === 11) rank = 'J';
+	else if(card.rank === 12) rank = 'Q';
+	else if(card.rank === 13) rank = 'K';
+	else if(card.rank === 14) rank = 'A';
+	else rank = '?';
+}
+
+let suit = suit_map[card.suit];
+return rank + suit;
+}
+
+</script>
+</html>
