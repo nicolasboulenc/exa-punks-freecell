@@ -1,17 +1,18 @@
 'use strict';
 
-import { create_game, solve, solve_all } from './solver.js'
+import { create_game, solve, solve_all, forward } from './solver.js'
 
 onmessage = (e) => {
 
-    if(e.data.action === 'init') {
+	if(e.data.action === 'init') {
 
-        const game = create_game(e.data.board);
-        let res = solve_all(game, on_success, e.data.start_index);
-    }
+		const game = create_game(e.data.board);
+		forward(game, e.data.start_index);
+		solve_all(game, on_success);
+	}
 }
 
-
 function on_success(game) {
-    postMessage({ action: 'solved', data: null });
+	postMessage({ action: 'solved', game: game });
+	return true;
 }

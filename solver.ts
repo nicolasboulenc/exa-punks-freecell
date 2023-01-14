@@ -28,57 +28,62 @@ interface Move {
 }
 
 
-function create_game(data: string[][]): Game {
+function create_game(data: string[]): Game {
 
 	let stacks = create_stacks(data);
 	return { stacks: stacks, freecell: null, states: [], moves: [] };
 }
 
 
-function create_stacks(data: string[][]): Card[][] {
+function create_stacks(data: string[]): Card[][] {
 
-	let stacks = [];
+	const stacks: Card[][] = [];
+	for(let i=0; i<9; i++) {
+		stacks.push([]);
+	}
 
-	for(const s of data) {
-		let stack = []
-		for(const c of s) {
-			// get rank
-			let r = c.substring(0, c.length-1);
-			let rank: number;
-			if(isNaN(parseInt(r)) === false) {
-				rank = parseInt(r);
-			}
-			else {
-				if(r === 'j') rank = 11;
-				else if(r === 'q') rank = 12;
-				else if(r === 'k') rank = 13;
-				else if(r === 'a') rank = 14;
-				else rank = 999;
-			}
+	let index = 0;
+	for(const c of data) {
 
-			let s = c.substring(c.length-1);
-			let suit: Suit = 's';
-			if(s === 's') suit = 's';
-			else if(s === 'c') suit = 'c';
-			else if(s === 'h') suit = 'h';
-			else if(s === 'd') suit = 'd';
-
-			let color: Color = (suit === 'h' || suit === 'd' ? 'r' : 'b');
-
-			let card: Card = { rank: rank, suit: suit, color: color, face: rank > 10 };
-			stack.push(card);
+		if(c === '') {
+			index++;
+			continue;
 		}
-		stacks.push(stack);
+
+		// get rank
+		let r = c.substring(0, c.length-1);
+		let rank: number;
+		if(isNaN(parseInt(r)) === false) {
+			rank = parseInt(r);
+		}
+		else {
+			if(r === 'j') rank = 11;
+			else if(r === 'q') rank = 12;
+			else if(r === 'k') rank = 13;
+			else if(r === 'a') rank = 14;
+			else rank = 999;
+		}
+
+		let s = c.substring(c.length-1);
+		let suit: Suit = 's';
+		if(s === 's') suit = 's';
+		else if(s === 'c') suit = 'c';
+		else if(s === 'h') suit = 'h';
+		else if(s === 'd') suit = 'd';
+
+		let color: Color = (suit === 'h' || suit === 'd' ? 'r' : 'b');
+
+		let card: Card = { rank: rank, suit: suit, color: color, face: rank > 10 };
+		stacks[index++%9].push(card);
 	}
 	return stacks;
 }
 
 
-function print_game(game: Game): void {
+function format_game(game: Game) : string {
 
 	let line: string;
-	line = format_card(game.freecell).padStart(3, ' ');
-	console.log(line);
+	line = format_card(game.freecell).padStart(3, ' ') + '\n';
 
 	// get max stack size
 	let row_count = 0;
@@ -89,45 +94,22 @@ function print_game(game: Game): void {
 	}
 
 	for(let i=0; i<row_count; i++) {
-		let line = "";
 		for(const stack of game.stacks) {
 			if(stack.length > i) {
-				line += format_card(stack[i]).padStart(3, ' ') + " ";
+				line += format_card(stack[i]).padStart(3, ' ');
 			}
 			else {
-				line += "    ";
+				line += "   ";
 			}
 		}
-		console.log(line);
+		line += '\n';
 	}
-	console.log('');
+
+	return line;
 }
 
 
-function format_card(card: Card | null): string {
-
-	// in case it is the freecell destination
-	if(card === null) return " __";
-
-	const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" }
-	let rank: string;
-	if(card.rank < 11) {
-		rank = card.rank.toString();
-	}
-	else {
-		if(card.rank === 11) rank = 'J';
-		else if(card.rank === 12) rank = 'Q';
-		else if(card.rank === 13) rank = 'K';
-		else if(card.rank === 14) rank = 'A';
-		else rank = '?';
-	}
-
-	let suit = suit_map[card.suit];
-	return rank + suit;
-}
-
-
-function print_move(move: Move): void {
+function format_move(move: Move): string {
 
 	let from = [];
 	for(let card of move.src) {
@@ -139,8 +121,20 @@ function print_move(move: Move): void {
 		src = `[${src}]`;
 	}
 
-	let line = `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
-	console.log(line);
+	return `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
+}
+
+
+function format_card(card: Card | null): string {
+
+	// in case it is the freecell destination
+	if(card === null) return "__";
+
+	const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" }
+	const rank_map = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A' ];
+	const rank = rank_map[card.rank];
+	const suit = suit_map[card.suit];
+	return rank + suit;
 }
 
 
@@ -374,15 +368,13 @@ function solve(game: Game): boolean {
 }
 
 
-function solve_all(game: Game, callback: Function, start_index: number=0): boolean {
-
-	// forward(game, start_index);
+function solve_all(game: Game, callback: Function): boolean {
 
 	// test for success
 	let success = check_success(game);
 	if(success === true) {
-		callback(game);
-		return false;
+		return !callback(game);
+		// return false;
 	}
 
 	// get next moves
@@ -456,7 +448,7 @@ function forward(game: Game, move_count: number, move_index: number = 0): boolea
 	let i = 0;
 	while(move_index + i < move_count) {
 		i++;
-	}		
+	}
 
 	const move = valid_moves[i];
 
@@ -478,5 +470,5 @@ function forward(game: Game, move_count: number, move_index: number = 0): boolea
 }
 
 
-export { create_game, solve, solve_all, print_game, print_move };
+export { Game, Card, Move, create_game, get_valid_moves, solve, solve_all, forward, format_move, format_game, serialise_game };
 

@@ -4,50 +4,53 @@ function create_game(data) {
     return { stacks: stacks, freecell: null, states: [], moves: [] };
 }
 function create_stacks(data) {
-    let stacks = [];
-    for (const s of data) {
-        let stack = [];
-        for (const c of s) {
-            // get rank
-            let r = c.substring(0, c.length - 1);
-            let rank;
-            if (isNaN(parseInt(r)) === false) {
-                rank = parseInt(r);
-            }
-            else {
-                if (r === 'j')
-                    rank = 11;
-                else if (r === 'q')
-                    rank = 12;
-                else if (r === 'k')
-                    rank = 13;
-                else if (r === 'a')
-                    rank = 14;
-                else
-                    rank = 999;
-            }
-            let s = c.substring(c.length - 1);
-            let suit = 's';
-            if (s === 's')
-                suit = 's';
-            else if (s === 'c')
-                suit = 'c';
-            else if (s === 'h')
-                suit = 'h';
-            else if (s === 'd')
-                suit = 'd';
-            let color = (suit === 'h' || suit === 'd' ? 'r' : 'b');
-            let card = { rank: rank, suit: suit, color: color, face: rank > 10 };
-            stack.push(card);
+    const stacks = [];
+    for (let i = 0; i < 9; i++) {
+        stacks.push([]);
+    }
+    let index = 0;
+    for (const c of data) {
+        if (c === '') {
+            index++;
+            continue;
         }
-        stacks.push(stack);
+        // get rank
+        let r = c.substring(0, c.length - 1);
+        let rank;
+        if (isNaN(parseInt(r)) === false) {
+            rank = parseInt(r);
+        }
+        else {
+            if (r === 'j')
+                rank = 11;
+            else if (r === 'q')
+                rank = 12;
+            else if (r === 'k')
+                rank = 13;
+            else if (r === 'a')
+                rank = 14;
+            else
+                rank = 999;
+        }
+        let s = c.substring(c.length - 1);
+        let suit = 's';
+        if (s === 's')
+            suit = 's';
+        else if (s === 'c')
+            suit = 'c';
+        else if (s === 'h')
+            suit = 'h';
+        else if (s === 'd')
+            suit = 'd';
+        let color = (suit === 'h' || suit === 'd' ? 'r' : 'b');
+        let card = { rank: rank, suit: suit, color: color, face: rank > 10 };
+        stacks[index++ % 9].push(card);
     }
     return stacks;
 }
-function print_game(game) {
+function format_game(game) {
     let line;
-    line = format_card(game.freecell).padStart(3, ' ');
-    console.log(line);
+    line = format_card(game.freecell).padStart(3, ' ') + '\n';
     // get max stack size
     let row_count = 0;
     for (const stack of game.stacks) {
@@ -56,44 +59,19 @@ function print_game(game) {
         }
     }
     for (let i = 0; i < row_count; i++) {
-        let line = "";
         for (const stack of game.stacks) {
             if (stack.length > i) {
-                line += format_card(stack[i]).padStart(3, ' ') + " ";
+                line += format_card(stack[i]).padStart(3, ' ');
             }
             else {
-                line += "    ";
+                line += "   ";
             }
         }
-        console.log(line);
+        line += '\n';
     }
-    console.log('');
+    return line;
 }
-function format_card(card) {
-    // in case it is the freecell destination
-    if (card === null)
-        return " __";
-    const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" };
-    let rank;
-    if (card.rank < 11) {
-        rank = card.rank.toString();
-    }
-    else {
-        if (card.rank === 11)
-            rank = 'J';
-        else if (card.rank === 12)
-            rank = 'Q';
-        else if (card.rank === 13)
-            rank = 'K';
-        else if (card.rank === 14)
-            rank = 'A';
-        else
-            rank = '?';
-    }
-    let suit = suit_map[card.suit];
-    return rank + suit;
-}
-function print_move(move) {
+function format_move(move) {
     let from = [];
     for (let card of move.src) {
         from.push(format_card(card));
@@ -102,8 +80,17 @@ function print_move(move) {
     if (move.src.length > 1) {
         src = `[${src}]`;
     }
-    let line = `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
-    console.log(line);
+    return `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
+}
+function format_card(card) {
+    // in case it is the freecell destination
+    if (card === null)
+        return "__";
+    const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" };
+    const rank_map = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const rank = rank_map[card.rank];
+    const suit = suit_map[card.suit];
+    return rank + suit;
 }
 function serialise_game(game) {
     let state = format_card(game.freecell);
@@ -280,13 +267,12 @@ function solve(game) {
     }
     return false;
 }
-function solve_all(game, callback, start_index = 0) {
-    // forward(game, start_index);
+function solve_all(game, callback) {
     // test for success
     let success = check_success(game);
     if (success === true) {
-        callback(game);
-        return false;
+        return !callback(game);
+        // return false;
     }
     // get next moves
     let valid_moves = get_valid_moves(game);
@@ -357,5 +343,5 @@ function forward(game, move_count, move_index = 0) {
     game.moves.push(move);
     return true;
 }
-export { create_game, solve, solve_all, print_game, print_move };
+export { create_game, get_valid_moves, solve, solve_all, forward, format_move, format_game, serialise_game };
 //# sourceMappingURL=solver.js.map

@@ -4,70 +4,68 @@
 </head>
 <body>
 <div>
-    
+
 </div>
 </body>
-<script>
+<script type="module">
 
-const DATA = [
-	[ "as", "10h", "ks", "qc" ],
-	[ "ah", "jd", "7c", "6h" ],
-	[ "9h", "qh", "10c", "kd" ],
-	[ "10d", "10s", "jc", "8s" ],
-	[ "kc", "qd", "6d", "qs" ],
-	[ "ac", "8c", "9c", "jh" ],
-	[ "9d", "7h", "7d", "8h" ],
-	[ "kh", "9s", "js", "8d" ],
-	[ "6s", "ad", "6c", "7s" ]
-];
-
-const worker_count = 3;
-for(let i=0; i < worker_count; i++) {
-	
-	const worker = new Worker('main-worker.js', { type: "module" });
-	worker.postMessage({ action: 'init', board: DATA, start_index: i });
-	worker.onmessage = (e) => { console.log('e'); }
-}
+import { create_game, get_valid_moves, serialise_game } from './solver.js';
 
 
-function print_move(move) {
+window.addEventListener('load', window_on_load);
 
-	let from = [];
-	for(let card of move.src) {
-		from.push(format_card(card));
+let t0;
+const workers = [];
+const solution_map = {};
+let solution_count = 0;
+
+function window_on_load(evt) {
+
+	const DATA = [
+		'as',  'ah', '9h',	'10d', 'kc', 'ac', '9d', 'kh', '6s',
+		'10h', 'jd', 'qh',	'10s', 'qd', '8c', '7h', '9s', 'ad',
+		'ks',  '7c', '10c',	'jc',  '6d', '9c', '7d', 'js', '6c',
+		'qc',  '6h', 'kd',	'8s',  'qs', 'jh', '8h', '8d', '7s'
+	];
+
+	const game = create_game(DATA);
+	const moves = get_valid_moves(game);
+
+	for(let i=0; i < moves.length; i++) {
+
+		console.log(`Creating worker ${i}.`);
+		const worker = new Worker('main-worker.js', { type: "module" });
+		worker.onmessage = (e) => { message_callback(e.data.game); }
+		workers.push(worker);
 	}
 
-	let src = from.join(', ')
-	if(move.src.length > 1) {
-		src = `[${src}]`;
+	t0 = performance.now();
+	let i = 0;
+	for(const worker of workers) {
+		worker.postMessage({ action: 'init', board: DATA, start_index: i++ });
 	}
-
-	let line = `${src}(${move.src_idx}) -> ${format_card(move.dst)}(${move.dst_idx})`;
-	console.log(line);
 }
 
 
-function format_card(card) {
+function message_callback(game) {
 
-// in case it is the freecell destination
-if(card === null) return " __";
+	// const str = serialise_game(game);
+	const str = game.states[game.states.length - 1];
+	if(solution_map[str] === undefined) {
+		solution_map[str] = 1;
+		solution_count++;
+		console.log(Math.floor(solution_count/100));
 
-const suit_map = { s: "\u2660", c: "\u2663", h: "\u2665", d: "\u2666" }
-let rank;
-if(card.rank < 11) {
-	rank = card.rank.toString();
-}
-else {
-	if(card.rank === 11) rank = 'J';
-	else if(card.rank === 12) rank = 'Q';
-	else if(card.rank === 13) rank = 'K';
-	else if(card.rank === 14) rank = 'A';
-	else rank = '?';
+		if(solution_count === 3000) {
+			const t1 = performance.now();
+			console.log(`Time it takes to run the function: ${((t1 - t0)/1000).toFixed(3)} ms`);
+			for(const worker of workers) {
+				worker.terminate();
+			}
+		}
+	}
 }
 
-let suit = suit_map[card.suit];
-return rank + suit;
-}
 
 </script>
 </html>
