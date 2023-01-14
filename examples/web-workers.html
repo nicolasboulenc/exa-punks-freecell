@@ -58,7 +58,7 @@ function message_callback(game) {
 
 		if(solution_count === 3000) {
 			const t1 = performance.now();
-			console.log(`Time it takes to run the function: ${((t1 - t0)/1000).toFixed(3)} ms`);
+			console.log(`Found ${solution_count} solutions in ${((t1 - t0)/1000).toFixed(3)} s`);
 			for(const worker of workers) {
 				worker.terminate();
 			}
