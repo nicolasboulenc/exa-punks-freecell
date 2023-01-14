@@ -1,6 +1,6 @@
 'use strict';
 
-import { create_game, solve, solve_all, forward } from '../solver.js'
+import { create_game, solve, solve_all, forward } from '../src/solver.js'
 
 onmessage = (e) => {
 

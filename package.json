@@ -5,7 +5,11 @@
   "type": "module",
   "main": "main-node.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests",
+    "asbuild:debug": "asc assembly/index.ts --target debug",
+    "asbuild:release": "asc assembly/index.ts --target release",
+    "asbuild": "npm run asbuild:debug && npm run asbuild:release",
+    "start": "npx serve ."
   },
   "repository": {
     "type": "git",
@@ -16,5 +20,14 @@
   "bugs": {
     "url": "https://github.com/nicolasboulenc/exa-punks-freecell/issues"
   },
-  "homepage": "https://github.com/nicolasboulenc/exa-punks-freecell#readme"
+  "homepage": "https://github.com/nicolasboulenc/exa-punks-freecell#readme",
+  "devDependencies": {
+    "assemblyscript": "^0.26.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/release.js",
+      "types": "./build/release.d.ts"
+    }
+  }
 }

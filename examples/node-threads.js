@@ -1,6 +1,6 @@
 'use strict';
 
-import { create_game, solve_all, get_valid_moves, forward } from '../solver.js';
+import { create_game, solve_all, get_valid_moves, forward } from '../src/solver.js';
 import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 
 let t0;

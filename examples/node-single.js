@@ -1,6 +1,6 @@
 'use strict';
 
-import { create_game, solve, solve_all, format_game, format_move } from '../solver.js'
+import { create_game, solve, solve_all, format_game, format_move } from '../src/solver.js'
 
 
 const DATA = [

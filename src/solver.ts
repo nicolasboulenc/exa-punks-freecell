@@ -310,7 +310,7 @@ function execute(move: Move, game: Game): void {
 }
 
 
-function cancel(move: Move, game: Game) {
+function cancel(move: Move, game: Game): void {
 
 	const dst = null
 	const rev: Move = { src: move.src, src_idx: move.dst_idx, dst: dst, dst_idx: move.src_idx };
