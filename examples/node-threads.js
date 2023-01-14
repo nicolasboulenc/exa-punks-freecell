@@ -1,15 +1,16 @@
 'use strict';
 
-import { create_game, solve_all, } from '../solver.js'
-const {	Worker, isMainThread, parentPort, workerData } = require('node:worker_threads');
+import { create_game, solve_all, get_valid_moves, forward } from '../solver.js';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
+
+let t0;
+const workers = [];
+const solution_map = {};
+let solution_count = 0;
 
 // main thread
 if (isMainThread) {
 
-	let t0;
-	const workers = [];
-	const solution_map = {};
-	let solution_count = 0;
 
 	const DATA = [
 		'as',  'ah', '9h',	'10d', 'kc', 'ac', '9d', 'kh', '6s',
@@ -24,9 +25,8 @@ if (isMainThread) {
 	for(let i=0; i < moves.length; i++) {
 
 		console.log(`Creating worker ${i}.`);
-		const worker = new Worker(__filename, { workerData: null });
-		// const worker = new Worker('main-worker.js', { type: "module" });
-		worker.on('message', (e) => { message_callback(e.data.game); });
+		const worker = new Worker('./node-threads.js', { workerData: null });
+		worker.on('message', (e) => { message_callback(e.game); });
 		workers.push(worker);
 	}
 
@@ -40,10 +40,10 @@ if (isMainThread) {
 else {
 	parentPort.on('message', (e) => {
 
-		if(e.data.action === 'init') {
+		if(e.action === 'init') {
 
-			const game = create_game(e.data.board);
-			forward(game, e.data.start_index);
+			const game = create_game(e.board);
+			forward(game, e.start_index);
 			solve_all(game, on_success);
 		}
 	});
@@ -57,7 +57,7 @@ function message_callback(game) {
 	if(solution_map[str] === undefined) {
 		solution_map[str] = 1;
 		solution_count++;
-		console.log(Math.floor(solution_count/100));
+		// console.log(Math.floor(solution_count/100));
 
 		if(solution_count === 3000) {
 			const t1 = performance.now();
