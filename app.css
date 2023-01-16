@@ -48,7 +48,7 @@ div[data-card].moving {
 }
 
 .transit {
-    transition: all 1s;
+    transition: top 0.08s ease-in, left 0.08s;
 }
 
 div[data-card="ac"] { background-position: left -35px top -42px; }
