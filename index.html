@@ -5,72 +5,7 @@
 import { add } from "./build/release.js";
 document.body.innerText = add(1, 2);
 </script>
-<style>
-	body {
-		background-color: darkgreen;
-	}
-
-	div {
-		border: 1px solid black;
-	}
-
-	.freecell-container {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		justify-content: flex-end;
-	}
-
-	.stacks-container {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		justify-content: space-evenly;
-	}
-
-	.freecell-container > .stack {
-		height: 255px;
-	}
-
-	.stack {
-		width: 168px;
-	}
-
-	div[data-card] {
-		background-image: url('playing-card-template_391307.jpg');
-		background-repeat: no-repeat;
-		width: 168px;
-		height: 255px;
-		border-radius: 20px;
-	}
-
-	div[data-card="ac"] {
-		background-position: left -35px top -42px;
-	}
-
-</style>
 </head>
 <body>
-	<div class="freecell-container">
-		<div class="stack" id="freecell">
-			<div data-card="ac"></div>
-		</div>
-	</div>
-	<div class="stacks-container">
-		<div class="stack" id="stack0">
-			<div data-card="ac"></div>
-		</div>
-		<div class="stack" id="stack1"></div>
-		<div class="stack" id="stack2"></div>
-		<div class="stack" id="stack3"></div>
-		<div class="stack" id="stack4"></div>
-		<div class="stack" id="stack5"></div>
-		<div class="stack" id="stack6"></div>
-		<div class="stack" id="stack7"></div>
-		<div class="stack" id="stack8"></div>
-	</div>
 </body>
-<script type="">
-
-</script>
 </html>
