@@ -1,6 +1,6 @@
 'use strict';
 
-import { create_game, get_valid_from,  check_valid_to } from './src/solver.js';
+import { create_game, get_valid_from, check_valid_to } from './src/solver.js';
 
 const DATA = [
 	'as',  'ah', '9h',	'10d', 'kc', 'ac', '9d', 'kh', '6s',
@@ -119,6 +119,7 @@ function window_onmouseup(evt) {
 
 	let elems = document.elementsFromPoint(evt.clientX, evt.clientY);
 
+	// the stack is always 3rd from bottom, should start from the end?
 	for(const elem of elems) {
 		if(elem.classList.contains('stack') === true) {
 			app.stack_to = elem;
