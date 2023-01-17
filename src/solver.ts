@@ -470,5 +470,5 @@ function forward(game: Game, move_count: number, move_index: number = 0): boolea
 }
 
 
-export { create_game, get_valid_moves, solve, solve_all, forward, format_move, format_game, serialise_game };
+export { create_game, get_valid_moves, get_valid_from, check_valid_to, solve, solve_all, forward, format_move, format_game, serialise_game };
 

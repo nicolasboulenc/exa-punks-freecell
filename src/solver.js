@@ -343,5 +343,5 @@ function forward(game, move_count, move_index = 0) {
     game.moves.push(move);
     return true;
 }
-export { create_game, get_valid_moves, solve, solve_all, forward, format_move, format_game, serialise_game };
+export { create_game, get_valid_moves, get_valid_from, check_valid_to, solve, solve_all, forward, format_move, format_game, serialise_game };
 //# sourceMappingURL=solver.js.map

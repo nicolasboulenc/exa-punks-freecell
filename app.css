@@ -1,54 +1,72 @@
-body {
-    background-color: darkgreen;
+:root {
+	--card-width: 167px;
+	--card-height: 255px;
+	/* for shadow effect */
+	--blur: 2px;
+	--spread: -1px;
+	--horiz: 1px;
+	--vert: -1px;
 }
 
-.freecell-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
+body {
+	background-color: darkgreen;
+}
+
+.header {
+	height: 8vh;
 }
 
 .stacks-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    gap: 10px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+	gap: 1vw;
 }
 
-.freecell-container > .stack {
-    height: 255px;
+.stacks-container > div {
+	width: var(--card-width);
+}
+
+#freecell {
+	width: var(--card-width);
+	height: var(--card-height);
+	margin-bottom: 2vh;
+	border: 1px dashed #222;
+	border-radius: 12px;
 }
 
 .stack {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    width: 169px;
-    border: 1px solid blue;
+	border: 1px dashed #222;
+	border-radius: 12px;
+	padding-bottom: 12vh;
+	max-height: 52vh;
 }
 
 div[data-card] {
-    background-image: url('playing-card-template_391307.png');
-    background-repeat: no-repeat;
-    border: 1px solid #222;
-    width: 167px;
-    height: 255px;
-    border-radius: 12px;
+	background-image: url('playing-card-template_391307.png');
+	background-repeat: no-repeat;
+	/* border: 1px solid #222; */
+	margin-left: -1px;
+	width: var(--card-width);
+	height: var(--card-height);
+	border-radius: 12px;
+	margin-top: -110%;
+
+	box-shadow: calc(clamp(0px, var(--horiz), 2px)) calc(clamp(0px, var(--vert), 2px)) 2px calc(var(--spread)) rgba(0, 0, 0, 0.233), calc(2 * var(--horiz)) calc(2 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.20), calc(3 * var(--horiz)) calc(3 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.123), calc(5 * var(--horiz)) calc(5 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.076), calc(8 * var(--horiz)) calc(8 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.047), calc(13 * var(--horiz)) calc(13 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.028);
+	border: 1px solid rgba(0, 0, 0, 0.068);
+
 }
 
-div[data-card]:not(:first-child) {
-    margin-top: -110%;
+.stack > div > div[data-card] {
+	margin-top: -1px;
 }
 
-div[data-card].moving {
-    position: absolute;
-    margin: 0;
-}
+div.moving { position: absolute; }
+div.moving > div[data-card] { margin-top: 0; }
 
 .transit {
-    transition: top 0.08s ease-in, left 0.08s;
+	transition: top 0.08s ease-in, left 0.08s;
 }
 
 div[data-card="ac"] { background-position: left -35px top -42px; }
