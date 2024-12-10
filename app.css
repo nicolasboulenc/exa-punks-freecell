@@ -1,6 +1,11 @@
 :root {
-	--card-width: 167px;
-	--card-height: 255px;
+	/* actual card size 167 x 255 */
+	/* width - 10 x stacks gap - 16 x 1px border */
+	--stack-border-size: 2px;
+	--stack-gap: 0.5vw;
+	--stack-width: calc(100vw / 9 - 10 * var(--stack-gap));
+	--card-width: calc((100vw - 10 * var(--stack-gap) - 38 * var(--stack-border-size)) / 9);
+	--card-height: calc(var(--card-width) / 167 * 255);
 	/* for shadow effect */
 	--blur: 2px;
 	--spread: -1px;
@@ -21,33 +26,26 @@ body {
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: space-evenly;
-	gap: 1vw;
-}
-
-.stacks-container > div {
-	width: var(--card-width);
+	gap: var(--stack-gap);
 }
 
 #freecell {
-	width: var(--card-width);
 	height: var(--card-height);
-	margin-bottom: 2vh;
-	border: 1px dashed #222;
-	border-radius: 12px;
+	padding: 0;
 }
 
 .stack {
-	border: 1px dashed #222;
+	box-sizing: border-box;
+	border: var(--stack-border-size) dashed #222;
 	border-radius: 12px;
 	padding-bottom: 12vh;
-	max-height: 52vh;
+	height: 52vh;
+	width: var(--stack-width);
 }
 
 div[data-card] {
 	background-image: url('playing-card-template_391307.png');
 	background-repeat: no-repeat;
-	/* border: 1px solid #222; */
-	margin-left: -1px;
 	width: var(--card-width);
 	height: var(--card-height);
 	border-radius: 12px;
@@ -55,11 +53,10 @@ div[data-card] {
 
 	box-shadow: calc(clamp(0px, var(--horiz), 2px)) calc(clamp(0px, var(--vert), 2px)) 2px calc(var(--spread)) rgba(0, 0, 0, 0.233), calc(2 * var(--horiz)) calc(2 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.20), calc(3 * var(--horiz)) calc(3 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.123), calc(5 * var(--horiz)) calc(5 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.076), calc(8 * var(--horiz)) calc(8 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.047), calc(13 * var(--horiz)) calc(13 * var(--vert)) calc(var(--blur)) calc(var(--spread)) rgba(0, 0, 0, 0.028);
 	border: 1px solid rgba(0, 0, 0, 0.068);
-
 }
 
 .stack > div > div[data-card] {
-	margin-top: -1px;
+	margin-top: -0px;
 }
 
 div.moving { position: absolute; }
@@ -69,6 +66,7 @@ div.moving > div[data-card] { margin-top: 0; }
 	transition: top 0.08s ease-in, left 0.08s;
 }
 
+/* image 1920:1760 */
 div[data-card="ac"] { background-position: left -35px top -42px; }
 div[data-card="kc"] { background-position: left -757px top -1142px; }
 div[data-card="qc"] { background-position: left -570px top -1142px;	}
@@ -101,6 +99,7 @@ div[data-card="10s"] { background-position: left -1718px top -581px; }
 
 div[data-card="ad"] { background-position: left -35px top -850px; }
 div[data-card="kd"] { background-position: left -1369px top -1463px; }
+/* div[data-card="kd"] { background-position: left calc((1369 / 1920) * 100%) top 83.1%; } */
 div[data-card="qd"] { background-position: left -1182px top -1463px;	}
 div[data-card="jd"] { background-position: left -995px top -1463px;	}
 div[data-card="6d"] { background-position: left -970px top -850px; }

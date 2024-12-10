@@ -59,10 +59,11 @@ function load(dom_stacks, game_stacks) {
 
 			const card_div = document.createElement("div");
 			card_div.dataset["card"] = `${rank_map[card.rank]}${card.suit}`;
+
 			const cont_div = document.createElement("div");
+			cont_div.classList.add("sub-stack");
 			cont_div.appendChild(card_div);
-			cont_div.id = `s${i++}`;
-			cont_div.addEventListener('mousedown', card_onmousedown);
+			cont_div.addEventListener("mousedown", card_onmousedown);
 
 			cont.appendChild(cont_div);
 			cont = cont_div;
